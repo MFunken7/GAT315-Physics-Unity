@@ -2,10 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class KinematicController : MonoBehaviour
+
+[RequireComponent(typeof(Rigidbody))]
+public class RigidBodyController : MonoBehaviour
 {
     [SerializeField] float speed = 1;
+    [SerializeField] ForceMode forcemode;
     [SerializeField] Space space = Space.World;
+    
+    Rigidbody rb;
+    Vector3 force = Vector3.zero;
+    Vector3 torque = Vector3.zero;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
     void Update()
     {
         Vector3 direction = Vector3.zero;
@@ -18,13 +30,21 @@ public class KinematicController : MonoBehaviour
         direction.z = Input.GetAxis("Vertical");
         direction = Vector3.ClampMagnitude(direction, 1);
 
-        transform.rotation *= Quaternion.Euler(0, rotation * speed, 0);
+        force = direction * speed;
+        torque = Vector3.up * rotation * speed;
+
+
+        //transform.rotation *= Quaternion.Euler(0, rotation * speed, 0);
+        //transform.Translate(direction * speed * Time.deltaTime, space);
 
         //direction = transform.rotation * direction;
-
-        transform.Translate(direction * speed * Time.deltaTime, space);
-
         //transform.position += direction * speed * Time.deltaTime;
+    }
+
+    private void FixedUpdate()
+    {
+        rb.AddRelativeForce(force, forcemode);
+        rb.AddTorque(torque, forcemode);
     }
 
     private void OnDrawGizmos()
